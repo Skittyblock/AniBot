@@ -1,6 +1,7 @@
+use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::InteractionResponseType;
-use serenity::prelude::*;
+use serenity::prelude::Context;
 use std::time::Instant;
 
 pub async fn run(ctx: Context, command: ApplicationCommandInteraction) {
@@ -26,4 +27,10 @@ pub async fn run(ctx: Context, command: ApplicationCommandInteraction) {
     {
         println!("Cannot edit slash command: {}", why);
     }
+}
+
+pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    command
+        .name("ping")
+        .description("Check to see if the bot is running")
 }

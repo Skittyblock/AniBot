@@ -2,10 +2,13 @@ use crate::anilist;
 use crate::anilist::models::MediaType;
 use serde::{self, Serialize};
 use serde_json::json;
+use serenity::builder::CreateApplicationCommand;
 use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::autocomplete::AutocompleteInteraction;
 use serenity::model::application::interaction::InteractionResponseType;
-use serenity::prelude::*;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
+use serenity::prelude::Context;
 
 #[derive(Serialize, Debug)]
 struct AutocompleteOption {
@@ -22,9 +25,16 @@ fn truncate(mut s: String, max_chars: usize) -> String {
 }
 
 pub async fn run(ctx: Context, command: ApplicationCommandInteraction, media_type: MediaType) {
-    let search = &command.data.options.first().unwrap().value;
-    if let Some(search) = search {
-        let query = search.as_str().unwrap_or_default();
+    let search = &command
+        .data
+        .options
+        .get(0)
+        .expect("Expected name option")
+        .resolved
+        .as_ref()
+        .expect("Expected string");
+
+    if let CommandDataOptionValue::String(query) = search {
         let result = if let Ok(id) = query.parse::<i32>() {
             anilist::query_media(id).await // search by id
         } else {
@@ -91,7 +101,7 @@ pub async fn run(ctx: Context, command: ApplicationCommandInteraction, media_typ
                                     if let Some(description) = description {
                                         e.description(
                                             truncate(description, 250)
-                                                .replace("<br>", "")
+                                                .replace("<br><br>", "\n")
                                                 .replace("<i>", "*")
                                                 .replace("</i>", "*"),
                                         );
@@ -192,5 +202,35 @@ pub async fn autocomplete(ctx: Context, command: AutocompleteInteraction, media_
                 }
             }
         }
+    }
+}
+
+pub fn register(
+    command: &mut CreateApplicationCommand,
+    media_type: MediaType,
+) -> &mut CreateApplicationCommand {
+    match media_type {
+        MediaType::Anime => command
+            .name("anime")
+            .description("Search anime on AniList")
+            .create_option(|option| {
+                option
+                    .name("name")
+                    .description("The name of the anime")
+                    .kind(CommandOptionType::String)
+                    .set_autocomplete(true)
+                    .required(true)
+            }),
+        MediaType::Manga => command
+            .name("manga")
+            .description("Search manga on AniList")
+            .create_option(|option| {
+                option
+                    .name("name")
+                    .description("The name of the manga")
+                    .kind(CommandOptionType::String)
+                    .set_autocomplete(true)
+                    .required(true)
+            }),
     }
 }

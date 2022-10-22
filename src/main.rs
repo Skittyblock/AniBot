@@ -4,14 +4,22 @@ pub mod commands;
 use anilist::models::MediaType;
 use dotenv::dotenv;
 use serenity::async_trait;
+use serenity::builder::CreateApplicationCommands;
+use serenity::model::application::command::Command;
 use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
-use serenity::model::prelude::command::CommandOptionType;
-use serenity::prelude::*;
+use serenity::prelude::{Client, Context, EventHandler, GatewayIntents};
 use std::env;
 
 struct Handler;
+
+fn register_cmds(commands: &mut CreateApplicationCommands) -> &mut CreateApplicationCommands {
+    commands
+        // .create_application_command(|command| commands::ping::register(command))
+        .create_application_command(|command| commands::lookup::register(command, MediaType::Anime))
+        .create_application_command(|command| commands::lookup::register(command, MediaType::Manga))
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -38,48 +46,14 @@ impl EventHandler for Handler {
             ready.user.name, ready.user.discriminator
         );
 
-        let guild_id = GuildId(
-            env::var("GUILD_ID")
-                .expect("Expected GUILD_ID in environment")
-                .parse()
-                .expect("GUILD_ID must be an integer"),
-        );
-
-        _ = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands
-                // .create_application_command(|command| {
-                //     command
-                //         .name("ping")
-                //         .description("Check to see if the bot is running")
-                // })
-                .create_application_command(|command| {
-                    command
-                        .name("anime")
-                        .description("Search anime on AniList")
-                        .create_option(|option| {
-                            option
-                                .name("name")
-                                .description("The name of the anime")
-                                .kind(CommandOptionType::String)
-                                .set_autocomplete(true)
-                                .required(true)
-                        })
-                })
-                .create_application_command(|command| {
-                    command
-                        .name("manga")
-                        .description("Search manga on AniList")
-                        .create_option(|option| {
-                            option
-                                .name("name")
-                                .description("The name of the manga")
-                                .kind(CommandOptionType::String)
-                                .set_autocomplete(true)
-                                .required(true)
-                        })
-                })
-        })
-        .await;
+        if let Ok(guild_id) = env::var("GUILD_ID") {
+            let guild_id = GuildId(guild_id.parse().expect("GUILD_ID must be an integer"));
+            if guild_id != 0 {
+                _ = GuildId::set_application_commands(&guild_id, &ctx.http, register_cmds).await;
+                return;
+            }
+        }
+        _ = Command::set_global_application_commands(&ctx.http, register_cmds).await;
     }
 }
 
