@@ -73,7 +73,7 @@ pub async fn run(ctx: Context, command: ApplicationCommandInteraction, media_typ
                                 color = ((r as u32) << 16) + ((g as u32) << 8) + (b as u32);
                             }
                         }
-                        (image.medium, color)
+                        (image.extra_large, color)
                     }
                     None => (None, 0),
                 };
@@ -102,8 +102,9 @@ pub async fn run(ctx: Context, command: ApplicationCommandInteraction, media_typ
                                         e.description(
                                             truncate(description, 250)
                                                 .replace("<br><br>", "\n")
+                                                .replace("<br>", "")
                                                 .replace("<i>", "*")
-                                                .replace("</i>", "*"),
+                                                .replace("</i>", "*")
                                         );
                                     }
                                     e.field("Status", status, true);
@@ -174,8 +175,7 @@ pub async fn autocomplete(ctx: Context, command: AutocompleteInteraction, media_
                     let suggestions: Vec<AutocompleteOption> = media
                         .iter()
                         .filter_map(|item| {
-                            if let Some(item) = item {
-                                Some(AutocompleteOption {
+                            item.as_ref().map(|item| AutocompleteOption {
                                     name: match &item.title {
                                         Some(title) => {
                                             String::from(title.english.as_ref().unwrap_or(
@@ -186,9 +186,6 @@ pub async fn autocomplete(ctx: Context, command: AutocompleteInteraction, media_
                                     },
                                     value: item.id.to_string(),
                                 })
-                            } else {
-                                None
-                            }
                         })
                         .collect();
                     let choices = json!(suggestions);

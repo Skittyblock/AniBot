@@ -52,7 +52,8 @@ impl MediaStatus {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MediaCoverImage {
-    pub medium: Option<String>,
+    #[serde(rename = "extraLarge")]
+    pub extra_large: Option<String>,
     pub color: Option<String>,
 }
 
