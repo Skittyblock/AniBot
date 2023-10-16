@@ -88,7 +88,7 @@ pub async fn query_search(
 		    episodes
 		    chapters
 			coverImage {
-			  medium
+			  exraLarge
 			  color
 			}
 			bannerImage
@@ -120,7 +120,7 @@ pub async fn query_media(id: i32) -> Result<QueryResponse<MediaResponse>> {
 		    episodes
 		    chapters
 			coverImage {
-			  medium
+			  extraLarge
 			  color
 			}
 			bannerImage
