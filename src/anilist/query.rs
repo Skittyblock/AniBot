@@ -1,7 +1,7 @@
 use super::models::{Media, MediaType};
 use reqwest::Client;
-use serde::{de::DeserializeOwned, Deserialize};
-use serde_json::{json, Map, Value};
+use serde::{Deserialize, de::DeserializeOwned};
+use serde_json::{Map, Value, json};
 
 type Result<T> = std::result::Result<T, AniListError>;
 

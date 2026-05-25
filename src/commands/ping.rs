@@ -1,6 +1,6 @@
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::application::interaction::InteractionResponseType;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use serenity::prelude::Context;
 use std::time::Instant;
 
